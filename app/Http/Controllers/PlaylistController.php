@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
-class HelloController extends Controller
+class PlaylistController extends Controller
 {
     public function store (Request $request) 
     {

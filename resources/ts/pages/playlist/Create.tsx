@@ -101,7 +101,15 @@ const PlayListCreate = () => {
     const submit = async (data: playlistType) => {
         if (!data) return;
         
-        const res = await axios.post('/api/playlist/store', data).then((res) => {
+        const res = await axios.post(
+            '/api/playlist/store', 
+            data,
+            {
+                headers: {
+                    'content-type': 'multipart/form-data',
+                }
+            }
+        ).then((res) => {
             return res.data
         }).catch((e: any) => {
         });

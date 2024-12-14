@@ -2,7 +2,7 @@ import React from "react";
 
 const PlayListIndex = () => {
     return (
-        <h1>index</h1>
+        <h1 className="text-red-900">index</h1>
     )
 }
 

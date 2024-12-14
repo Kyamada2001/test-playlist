@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'service_name'   => env('APP_NAME');,
+    'service_name'   => env('APP_NAME'),
 ];

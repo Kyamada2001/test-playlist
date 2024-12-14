@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import react from '@vitejs/plugin-react'; // <- 追加
+import env from "vite-plugin-env-compatible";
 
 export default defineConfig({
     plugins: [
@@ -14,6 +15,7 @@ export default defineConfig({
                 'resources/ts/index.tsx'
             ],
         }),
+        env({ prefix: "VITE",  mountedPath: "process.env" }) ,
         react(), // <- 追加
     ],
 });

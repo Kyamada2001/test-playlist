@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
+import axios from 'axios';
 
 // TODO: validate
 // TODO: アップしたフォルダ、ファイルを表示する機能
@@ -97,6 +98,16 @@ const PlayListCreate = () => {
         }
     }
 
+    const submit = async (data: playlistType) => {
+        if (!data) return;
+        
+        const res = await axios.post('/api/playlist/store', data).then((res) => {
+            return res.data
+        }).catch((e: any) => {
+        });
+        console.log(res)
+    }
+
     // 実行処理
     return (
         <div className="space-y-5">
@@ -111,6 +122,13 @@ const PlayListCreate = () => {
                     onChange={(e) => { handleFileChange(e.currentTarget.files); }}
                 />
             </div>
+            <button 
+                type="button" 
+                onClick={() => submit(playlist!)}
+                className="btn-primary"
+            >
+                登録
+            </button>
             <div>
                 <label>読み取り結果</label>
                 {

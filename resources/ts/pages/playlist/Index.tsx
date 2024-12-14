@@ -1,8 +1,13 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const PlayListIndex = () => {
     return (
-        <h1 className="text-red-900">index</h1>
+        <div>
+            <button type="button" className="btn-primary">
+                <Link to="/create">新規登録</Link>
+            </button>
+        </div>
     )
 }
 

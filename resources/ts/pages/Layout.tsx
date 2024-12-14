@@ -2,6 +2,7 @@ import { FC } from "react"
 
 //Outletをインポート
 import { Outlet } from 'react-router-dom';
+import Header from "./Header";
 
 
 const Layout: FC = () => {
@@ -10,13 +11,14 @@ const Layout: FC = () => {
     return (
         <>
             <header>
-                ヘッダー
+                <Header />
             </header>
 
-            <Outlet />
+            <main className="container mx-auto mt-5">
+                <Outlet />
+            </main>
 
             <footer>
-                フッター
             </footer>
         </>
     )

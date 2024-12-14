@@ -99,8 +99,9 @@ const PlayListCreate = () => {
 
     // 実行処理
     return (
-        <div>
-            <div>
+        <div className="space-y-5">
+            <h1 className="font-bold">プレイリスト登録</h1>
+            <div className="flex flex-col">
                 <label>プレイリストをアップロード</label>
                 <input
                     accept=""

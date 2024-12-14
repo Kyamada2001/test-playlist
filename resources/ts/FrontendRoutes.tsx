@@ -22,7 +22,6 @@ import { BrowserRouter, Route, Routes, Link, RouteProps } from "react-router-dom
   const FrontendRoutes = () => {
     return (
       <BrowserRouter>
-        <div>Route</div>
         <Routes>
           <Route path="/" element={<Layout />}>
             {routes.map(({ path, Component }, i) => <Route path={path} element={<Component />} />)}

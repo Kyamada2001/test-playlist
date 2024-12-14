@@ -6,12 +6,12 @@ import { BrowserRouter, Route, Routes, Link, RouteProps } from "react-router-dom
   
   const routes = [
     {
-      path: '/create',
-      Component: PlayListCreate
-    },
-    {
       path: '/',
       Component: PlayListIndex
+    },
+    {
+      path: '/create',
+      Component: PlayListCreate
     },
     {
       path: '*',
@@ -20,7 +20,6 @@ import { BrowserRouter, Route, Routes, Link, RouteProps } from "react-router-dom
   ] as const satisfies RouteProps[];
   
   const FrontendRoutes = () => {
-    console.log(routes);
     return (
       <BrowserRouter>
         <div>Route</div>

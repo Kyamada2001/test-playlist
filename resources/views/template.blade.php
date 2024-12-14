@@ -8,9 +8,9 @@
 
         {{-- react に変更があったとき自動で --}}
         @viteReactRefresh
-
+        
         {{-- vite でビルドしたファイルを読み込む --}}
-        @yield('vite')
+        @vite(['resources/sass/app.scss', 'resources/ts/App.tsx'])
 
     </head>
 

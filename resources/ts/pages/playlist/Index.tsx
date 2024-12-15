@@ -2,6 +2,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { FaChevronUp } from "react-icons/fa";
+import { FaChevronDown } from "react-icons/fa";
 
 type AlbumType = {
     id?: number,
@@ -37,6 +39,7 @@ type MusicType =  {
     created_at?: TimeRanges,
     updated_at?: TimeRanges,
     deleted_at?: TimeRanges | null,
+    album_music_tracks?: AlbumMusicTrack
 }
 
 type SearchParams = {
@@ -48,11 +51,13 @@ type SearchParams = {
 const PlayListIndex: React.FC = () => {
     const [albums, setAlbums] = useState<AlbumType[]>([]);
     const [artists, setArtists] = useState<ArtistType[]>([]);
+    const [music, setMusic] = useState<MusicType[]>([]);
     
     const fetchPlaylistData = async (searchParams : SearchParams | null) => {
-        const fetchSuccess = (res: { data: { albums: AlbumType[], artists: ArtistType[]}}) => {
+        const fetchSuccess = (res: { data: { albums: AlbumType[], artists: ArtistType[],music: MusicType[]}}) => {
             setAlbums(res.data.albums);
             setArtists(res.data.artists);
+            setMusic(res.data.music);
             console.log(res.data);
         }
 
@@ -65,9 +70,11 @@ const PlayListIndex: React.FC = () => {
         ).then((res) => fetchSuccess(res))
          .catch((e) => fetchError(e));
     }
-    const handleSearch = async (searchParams: SearchParams) => {
-        console.log("検索")
+    const handleSearch = (searchParams: SearchParams) => {
         fetchPlaylistData(searchParams);
+    }
+    const sortPlaylist = () => {
+
     }
 
     useEffect(() => {
@@ -83,7 +90,7 @@ const PlayListIndex: React.FC = () => {
             </div>
             <div className="space-y-5">
                 <div>
-                    <SortForm 
+                    <SearchForm 
                         // albums={{albums}}
                         // artists={{artists}}
                         handleSearch={handleSearch}
@@ -92,35 +99,32 @@ const PlayListIndex: React.FC = () => {
                 <div>
                     <label className="text-2xl font-semibold">プレイリスト</label>
                     <div className="space-y-4">
-                    <table className="table">
+                    <table className="table w-full overflow-x-scroll">
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <tr >
-                                <td className="px-6 py-3 w-10">演奏順</td>
-                                <td className="px-6 py-3">アルバム名</td>
-                                <td className="px-6 py-3">アーティスト名</td>
-                                <td className="px-6 py-3">ミュージック名</td>
-                                <td className="px-6 py-3">演奏時間</td>
+                                <td className="px-3 py-3 w-10">演奏順</td>
+                                <td className="px-3 py-3">アルバム名</td>
+                                <td className="px-3 py-3">アーティスト名</td>
+                                <td className="px-3 py-3">ミュージック名</td>
+                                <td className="px-3 py-3 w-26 flex items-center space-x-1">
+                                    <span>演奏時間</span>
+                                    <SortPlayTime/>
+                                </td>
                             </tr>
                         </thead>
                         <tbody>
                         {
-                            albums.length > 0 ? albums.map((album: AlbumType) => {
+                            music.length > 0 ? music.map((musicVal: MusicType) => {
                                 return (
-                                    !album.album_music_tracks || album.album_music_tracks?.length === 0 ? null :
-                                    album.album_music_tracks!.map((track) => {
-                                        if(track.music === null) return;
-                                        return (
-                                            <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                                                <td className="px-6 py-3">{album.id}-{track.track_index}</td>
-                                                <td className="px-6 py-3">{album.name}</td>
-                                                <td className="px-6 py-3">{returnArtistName(artists, track.music.artist_id)}</td>
-                                                <td className="px-6 py-3">{track.music.name}</td>
-                                                <td className="px-6 py-3">{secToTime(track.music.play_time_sec)}</td>
-                                            </tr>
-                                        )
-                                    })
+                                    <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                        <td className="px-3 py-3">{musicVal.album_music_tracks!.album_id}-{musicVal.album_music_tracks!.track_index}</td>
+                                        <td className="px-3 py-3">{returnAlbumName(albums, musicVal.album_music_tracks?.album_id!)}</td>
+                                        <td className="px-3 py-3">{returnArtistName(artists, musicVal.artist_id)}</td>
+                                        <td className="px-3 py-3">{musicVal.name}</td>
+                                        <td className="px-3 py-3">{secToTime(musicVal.play_time_sec)}</td>
+                                    </tr>
                                 )
-                            }) : null
+                            }): null
                         }
                         </tbody>
                         </table>
@@ -131,19 +135,20 @@ const PlayListIndex: React.FC = () => {
     )
 }
 
-const returnArtistName = (artists: ArtistType[], artistId: number | string) => {
-    if (!artistId) return "";
-    if (typeof artistId === "string") parseInt(artistId);
-    const artistInfo = artists.find((artist) => artist.id === artistId);
-    return artistInfo?.name;
+const SortPlayTime: React.ElementType = ({handleSort}) => {
+    const [sortStatus, setSortStatus] = useState<string | null>(null)
+    const sortSortStatus = (stauts: string) => {
+        // setSortStatus()
+    }
 
+    return (                               
+        <span>
+            <button onClick={() => sortSortStatus("up")}><FaChevronUp/></button>
+            <button onClick={() => sortSortStatus("down")}><FaChevronDown/></button>
+        </span>
+    )
 }
-const secToTime = (sec: number) => {
-    const minute: number = Math.floor(sec / 60);
-    const seconds = sec % 60;
-    return minute + ":" + seconds.toString().padStart(2, '0');
-}
-const SortForm: React.ElementType = ({handleSearch}) => {
+const SearchForm: React.ElementType = ({handleSearch}) => {
     const [artistName, setArtistName] = useState<string>("");
     const [albumName, setAlbumName] = useState<string>("");
 
@@ -179,6 +184,26 @@ const SortForm: React.ElementType = ({handleSearch}) => {
             </div>
         </div>
     );
+}
+
+const returnAlbumName = (albums: AlbumType[], albumId: number | string) => {
+    if (!albumId) return "";
+    if (typeof albumId === "string") parseInt(albumId);
+    const artistInfo = albums.find((album) => album.id === albumId);
+    return artistInfo?.name;
+
+}
+const returnArtistName = (artists: ArtistType[], artistId: number | string) => {
+    if (!artistId) return "";
+    if (typeof artistId === "string") parseInt(artistId);
+    const artistInfo = artists.find((artist) => artist.id === artistId);
+    return artistInfo?.name;
+
+}
+const secToTime = (sec: number) => {
+    const minute: number = Math.floor(sec / 60);
+    const seconds = sec % 60;
+    return minute + ":" + seconds.toString().padStart(2, '0');
 }
 
 

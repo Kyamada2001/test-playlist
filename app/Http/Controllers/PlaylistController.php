@@ -78,15 +78,10 @@ class PlaylistController extends Controller
 
     public function index (Request $request) 
     {
-        $search_params = $request["searchParams"]; 
+        $search_params = $request["searchParams"];
         $album_query = Album::query();
         $artist_query = Artist::query();
-
-        // アルバム検索
-        if (!empty($search_params) && isset($search_params['albumName'])) {
-            $search_album = $search_params['albumName'];
-            $album_query->where('name', 'like', "%{$search_album}%"); // アルバム検索   
-        }
+        $music_query = Music::query();
 
         // アーティスト検索、取得
         if (!empty($search_params) && isset($search_params['artistName'])) {
@@ -95,18 +90,25 @@ class PlaylistController extends Controller
         }
         $artists = $artist_query->get();
         $artistIds = $artists->pluck('id');
-        $album_query->with([
-            'album_music_tracks.music' => function ($query) use ($search_params, $artistIds) {
-            // アーティストidsをもとに検索
-            $query->whereIn('artist_id', $artistIds);
-        }]);
+        $music_query->whereIn('artist_id', $artistIds);
+
+        // アルバム検索
+        if (!empty($search_params) && isset($search_params['albumName'])) {
+            $search_album = $search_params['albumName'];
+            $music_query
+            ->join('album_music_tracks', 'music.id', '=', 'album_music_tracks.music_id') // 中間テーブルとの結合
+            ->join('albums', 'album_music_tracks.album_id', '=', 'albums.id')     // albums との結合
+            ->where('albums.name', 'like',"%{$search_album}%");
+        }
 
         $albums = $album_query->get();
+        $music = $music_query->with('album_music_tracks')->get();
         
 
         return response()->json([
             'albums' => $albums,
             'artists' => $artists,
+            'music' => $music,
         ], 200);
     }
 }

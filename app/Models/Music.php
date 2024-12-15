@@ -22,6 +22,6 @@ class Music extends Model
 
     public function album_music_tracks()
     {
-        return $this->hasOne(AlbumMusicrack::class);
+        return $this->hasOne(AlbumMusicTrack::class);
     }
 }

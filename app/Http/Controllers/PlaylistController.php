@@ -75,4 +75,9 @@ class PlaylistController extends Controller
         DB::commit();
         return response()->json(200);
     }
+
+    public function index (Request $request) 
+    {
+        return response()->json(200);
+    }
 }

@@ -73,8 +73,27 @@ const PlayListIndex: React.FC = () => {
     const handleSearch = (searchParams: SearchParams) => {
         fetchPlaylistData(searchParams);
     }
-    const sortPlaylist = () => {
-
+    const handleSortTime = (status: "up" | "down") => {
+        
+        const sortMusic = [...music]; 
+        if (status === "up") sortMusic.sort((a,b) => b.play_time_sec - a.play_time_sec) // 昇順
+        if (status === "down") sortMusic.sort((a,b) =>  a.play_time_sec - b.play_time_sec) // 降順
+        setMusic(sortMusic);
+    }
+    const handleSortTrack = (status: "up" | "down") => {
+        console.log(status)
+        const sortMusic = [...music]; 
+        const order = status === "up" ? -1 : 1;
+        sortMusic.sort((a,b) => {
+            if (b.album_id !== a.album_id) {
+                // Comment：申し訳ありません。downの時の挙動がおかしくなります。
+                return (b.album_id - a.album_id) * order;
+            } else {
+                // 同じ album_id の場合、track_index を昇順でソート
+                return (a.album_music_tracks!.track_index - b.album_music_tracks!.track_index) * order;
+            }
+        })
+        setMusic(sortMusic);
     }
 
     useEffect(() => {
@@ -83,32 +102,31 @@ const PlayListIndex: React.FC = () => {
     return (
         <div className="space-y-5">
             <div className="flex flex-row justify-between">
-                <h3 className="title">プレイリスト</h3>
+                <h3 className="title">プレイリスト一覧</h3>
                 <button type="button" className="btn primary-color">
                     <Link to="/create">新規登録</Link>
                 </button>
             </div>
             <div className="space-y-5">
-                <div>
-                    <SearchForm 
-                        // albums={{albums}}
-                        // artists={{artists}}
-                        handleSearch={handleSearch}
-                    />
-                </div>
+                <SearchForm
+                    handleSearch={handleSearch}
+                />
                 <div>
                     <label className="text-2xl font-semibold">プレイリスト</label>
                     <div className="space-y-4">
                     <table className="table w-full overflow-x-scroll">
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <tr >
-                                <td className="px-3 py-3 w-10">演奏順</td>
+                                <td className="px-3 py-3 w-10">
+                                    <span>演奏順</span>
+                                    <Sort keyPrefix={"track"} handleSort={handleSortTrack}/>
+                                </td>
                                 <td className="px-3 py-3">アルバム名</td>
                                 <td className="px-3 py-3">アーティスト名</td>
                                 <td className="px-3 py-3">ミュージック名</td>
                                 <td className="px-3 py-3 w-26 flex items-center space-x-1">
                                     <span>演奏時間</span>
-                                    <SortPlayTime/>
+                                    <Sort keyPrefix={"time"} handleSort={handleSortTime}/>
                                 </td>
                             </tr>
                         </thead>
@@ -135,19 +153,19 @@ const PlayListIndex: React.FC = () => {
     )
 }
 
-const SortPlayTime: React.ElementType = ({handleSort}) => {
-    const [sortStatus, setSortStatus] = useState<string | null>(null)
-    const sortSortStatus = (stauts: string) => {
-        // setSortStatus()
-    }
+const Sort: React.ElementType = ({handleSort, keyPrefix}) => {
+    const sortSortStatus = (status: "up" | "down") => {
+        handleSort(status);
+    };
 
     return (                               
         <span>
-            <button onClick={() => sortSortStatus("up")}><FaChevronUp/></button>
-            <button onClick={() => sortSortStatus("down")}><FaChevronDown/></button>
+            <button key={`${keyPrefix}-up`} onClick={() => sortSortStatus("up")}><FaChevronUp/></button>
+            <button key={`${keyPrefix}-down`} onClick={() => sortSortStatus("down")}><FaChevronDown/></button>
         </span>
     )
 }
+
 const SearchForm: React.ElementType = ({handleSearch}) => {
     const [artistName, setArtistName] = useState<string>("");
     const [albumName, setAlbumName] = useState<string>("");
@@ -156,8 +174,8 @@ const SearchForm: React.ElementType = ({handleSearch}) => {
         const searchParams = {
             artistName,
             albumName
-        }
-        handleSearch(searchParams)
+        };
+        handleSearch(searchParams);
     }
 
     return (

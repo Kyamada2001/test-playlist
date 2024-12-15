@@ -14,6 +14,6 @@ class Album extends Model
 
     public function album_music_tracks()
     {
-        return $this->belongsTo(ArbumMusicTrack::class);
+        return $this->hasMany(AlbumMusicTrack::class);
     }
 }

@@ -78,6 +78,13 @@ class PlaylistController extends Controller
 
     public function index (Request $request) 
     {
-        return response()->json(200);
+        $albums = Album::with('album_music_tracks.music')->get();
+        $artists = Artist::get();
+        Log::info($albums);
+
+        return response()->json([
+            'albums' => $albums,
+            'artists' => $artists,
+        ], 200);
     }
 }

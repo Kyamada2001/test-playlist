@@ -172,7 +172,7 @@ const PlayListCreate = () => {
             <button 
                 type="button" 
                 onClick={() => submit(playlist!)}
-                className="btn-primary"
+                className={`btn ${loading ? "bg-gray-500" : "primary-color"}`}
             >
                 登録
             </button>

@@ -5,7 +5,6 @@
 .primary-color {
     @apply bg-blue-500
 }
-.btn-primary {
-    @apply primary-color;
+.btn {
     @apply text-white font-bold py-2 px-4 rounded;
 }

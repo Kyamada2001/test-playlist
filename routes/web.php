@@ -5,7 +5,7 @@ use App\Http\Controllers\PlaylistController;
 
 Route::prefix('api')->group(function () {
     Route::prefix('playlist')->group(function () {
-        // return response()->json(['message' => 'This is a non-API route']);
+        Route::get('/index', [PlaylistController::class, 'index'])->name('playlsit.index');
         Route::post('/store', [PlaylistController::class, 'store'])->name('playlsit.store');
     });
 });

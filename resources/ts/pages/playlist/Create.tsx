@@ -168,7 +168,7 @@ const PlayListCreate = () => {
     // 実行処理
     return (
         <div className="space-y-5">
-            <h1 className="font-bold">プレイリスト登録</h1>
+            <h3 className="title">プレイリスト登録</h3>
             <div className="flex flex-col">
                 <label>プレイリストをアップロード</label>
                 <input

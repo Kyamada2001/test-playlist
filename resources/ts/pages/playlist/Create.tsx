@@ -49,18 +49,22 @@ const PlayListCreate = () => {
 
     // tsvファイルからミュージック情報を取得
     const fetchMusics = async (tsvFile: File) => {
-        const fileInfo: string = await fetchAsText(tsvFile)
-        const splitMusicInfo: string[] = fileInfo.split("\n")
-        
-        const tmpMusics: MusicType[] = splitMusicInfo.map((splitAlbum: string) => {
+        const fileInfo: string = await fetchAsText(tsvFile);
+        const splitMusicInfo: string[] = fileInfo.split("\n");
+        const lastIndex = splitMusicInfo.length - 1;
+
+        const tmpMusics: MusicType[] = splitMusicInfo.flatMap((splitAlbum: string, index: number) => {
+            // tsvファイルの最終行が空になる場合は、空を返す
+            if (lastIndex === index && splitAlbum.length === 0 ) return [];
+
             // ミュージック情報を取得
-            const splitMusicInfo: string[] = splitAlbum.split("\t")
+            const splitMusicInfo: string[] = splitAlbum.split("\t");
             const tmpMusicInfo: MusicType = {
                 musicName: splitMusicInfo[0] as string,
                 artistName: splitMusicInfo[1] as string,
                 musicTime: splitMusicInfo[2] as string
-            }
-            return tmpMusicInfo
+            };
+            return tmpMusicInfo;
         })
         return tmpMusics;
     } 
@@ -74,7 +78,7 @@ const PlayListCreate = () => {
             const fileNameIndex = 1; // 以下で使用する変数のsplitPathのファイル名の位置　例: folderName/file.tsv
 
             for (let i = 0; i < files.length; i++) {
-                const file: File = files[i]
+                const file: File = files[i];
                 const path: string = file.webkitRelativePath;
                 const splitPath: Array<string> | null = path.split('/'); /* 例: folderName/file.tsv */
 
@@ -82,18 +86,18 @@ const PlayListCreate = () => {
                 if (splitPath == null || splitPath.length == 0) throw new Error("アルバムを取得できませんでした");
 
                 // アルバム名を取得
-                const fileName: string = splitPath[fileNameIndex]
-                const tmpAlbumName: string = fileName.replace(".tsv", "")
+                const fileName: string = splitPath[fileNameIndex];
+                const tmpAlbumName: string = fileName.replace(".tsv", "");
 
                 // 曲情報を取得
-                const tmpMusics: MusicType[] = await fetchMusics(file)
+                const tmpMusics: MusicType[] = await fetchMusics(file);
 
                 tmpPlaylist[i] = {
                     albumName: tmpAlbumName,
                     music: tmpMusics,
-                }
+                };
             }
-            setPlaylist(tmpPlaylist)
+            setPlaylist(tmpPlaylist);
         } catch (e) {
             // TODO: エラーハンドリング
         }
@@ -109,7 +113,7 @@ const PlayListCreate = () => {
             
             const errorKeys: string[] = Object.keys(e.errors);
             const errorMessages = errorKeys.map((errorKey) => {
-                // if (!errorKey) return ""
+                if (!errorKey) return ""
                 const splitError = errorKey.split(".");
                 const lastIndex = splitError.length - 1;
 

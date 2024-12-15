@@ -38,22 +38,22 @@ class PlaylistController extends Controller
             'playlist.*.music.*.artistName' => 'required|string',
             'playlist.*.music.*.musicTime' => 'required|regex:/^([0-9]{1,3}):([0-5][0-9])$/',
         ]);
+
         DB::beginTransaction();  
         try { 
-            foreach($validated["playlist"] as $albumData) {
+            foreach ($validated["playlist"] as $albumData) {
                 Log::info($albumData);
                 $album = new Album();
-                $music = new Music();
-                $album_music_track = new AlbumMusicTrack();
 
                 $album->name = $albumData["albumName"];
                 $album->save();
 
                 foreach($albumData["music"] as $musicData) {
+                    $music = new Music();
+                    $album_music_track = new AlbumMusicTrack();
+
                     $artistName = $musicData["artistName"];
-                    Log::info($artistName);
                     $artist = Artist::firstOrCreate(['name' => $artistName]);
-                    Log::info($artist);
 
                     $music->name = $musicData["musicName"];
                     $music->artist_id = $artist->id;

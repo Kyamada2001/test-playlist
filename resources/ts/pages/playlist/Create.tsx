@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
+import { API_STATUS_CODE, MESSAGES } from "../../const";
 
 // TODO: validate
 // TODO: アップしたフォルダ、ファイルを表示する機能
@@ -117,7 +118,7 @@ const PlayListCreate = () => {
             }
             
             const errorKeys: string[] = Object.keys(e.errors);
-            const errorMessages = errorKeys.map((errorKey) => {
+            const errorMessages: string[] = errorKeys.map((errorKey) => {
                 if (!errorKey) return ""
                 const splitError = errorKey.split(".");
                 const lastIndex = splitError.length - 1;
@@ -141,12 +142,16 @@ const PlayListCreate = () => {
         }
         const storeSuccess = () => {
             setErrorMessages([]);
-            alert("登録が成功しました。一覧画面へ戻ります。");
+            alert(MESSAGES.SUCCESS);
             navigate("/");
         }
         const storeError = (e: any) => {
-            const errorMessages = validateMessage(e.response.data);
-            setErrorMessages(errorMessages);
+            if (e.status === API_STATUS_CODE.UNPROCESSABLE) {
+                const errorMessages = validateMessage(e.response.data);
+                setErrorMessages(errorMessages);
+            } else {
+                setErrorMessages([MESSAGES.SERVER_ERROR])
+            }
         }
 
         if (!data) return;
@@ -156,7 +161,7 @@ const PlayListCreate = () => {
             { playlist: data },
             { headers: {'content-type': 'multipart/form-data'} }
         ).then((res) => storeSuccess())
-         .catch((e: any) => storeError);
+         .catch((e) => storeError(e));
          setLoading(false);
     }
 

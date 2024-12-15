@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import axios from 'axios';
+import { useNavigate } from "react-router-dom";
 
 // TODO: validate
 // TODO: アップしたフォルダ、ファイルを表示する機能
@@ -22,9 +23,11 @@ const PlayListCreate = () => {
     }
 
     // 変数定義
+    const navigate = useNavigate();
     const directoryRef = useRef<HTMLInputElement | null>(null);
-    const [playlist, setPlaylist] = useState<playlistType | null>(null)
-    const [errorMessages, setErrorMessages] = useState<string[]>([])
+    const [playlist, setPlaylist] = useState<playlistType | null>(null);
+    const [errorMessages, setErrorMessages] = useState<string[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
 
     // 関数定義
     useEffect(() => {
@@ -136,23 +139,25 @@ const PlayListCreate = () => {
             })
             return errorMessages;
         }
+        const storeSuccess = () => {
+            setErrorMessages([]);
+            alert("登録が成功しました。一覧画面へ戻ります。");
+            navigate("/");
+        }
+        const storeError = (e: any) => {
+            const errorMessages = validateMessage(e.response.data);
+            setErrorMessages(errorMessages);
+        }
 
         if (!data) return;
+        setLoading(true);
         const res = await axios.post(
             '/api/playlist/store', 
             { playlist: data },
-            {
-                headers: {
-                    'content-type': 'multipart/form-data',
-                }
-            }
-        ).then((res) => {
-            setErrorMessages([]);
-            return res.data;
-        }).catch((e: any) => {
-            const errorMessages = validateMessage(e.response.data);
-            setErrorMessages(errorMessages);
-        });
+            { headers: {'content-type': 'multipart/form-data'} }
+        ).then((res) => storeSuccess())
+         .catch((e: any) => storeError);
+         setLoading(false);
     }
 
     // 実行処理

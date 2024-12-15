@@ -24,7 +24,7 @@ import { BrowserRouter, Route, Routes, Link, RouteProps } from "react-router-dom
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Layout />}>
-            {routes.map(({ path, Component }, i) => <Route path={path} element={<Component />} />)}
+            {routes.map(({ path, Component }, i) => <Route key={i} path={path} element={<Component />} />)}
           </Route>
         </Routes>
       </BrowserRouter>

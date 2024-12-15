@@ -3,12 +3,12 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-    type AlbumType = {
+type AlbumType = {
     id?: number,
-        name: string,
-        created_at?: TimeRanges,
-        updated_at?: TimeRanges,
-        deleted_at?: TimeRanges | null,
+    name: string,
+    created_at?: TimeRanges,
+    updated_at?: TimeRanges,
+    deleted_at?: TimeRanges | null,
     album_music_tracks?: AlbumMusicTrack[],
 }
 type AlbumMusicTrack = {
@@ -20,34 +20,40 @@ type AlbumMusicTrack = {
     updated_at?: TimeRanges,
     deleted_at?: TimeRanges | null,
     music: MusicType
-    }
-    type ArtistType =  {
+}
+type ArtistType =  {
     id?: number,
-        name: string,
-        created_at?: TimeRanges,
-        updated_at?: TimeRanges,
-        deleted_at?: TimeRanges | null,
-    }
-    type MusicType =  {
+    name: string,
+    created_at?: TimeRanges,
+    updated_at?: TimeRanges,
+    deleted_at?: TimeRanges | null,
+}
+type MusicType =  {
     id?: number,
-        album_id: number,
-        artist_id: number,
-        name: string,
-        play_time_sec: number,
-        created_at?: TimeRanges,
-        updated_at?: TimeRanges,
-        deleted_at?: TimeRanges | null,
-    }
+    album_id: number,
+    artist_id: number,
+    name: string,
+    play_time_sec: number,
+    created_at?: TimeRanges,
+    updated_at?: TimeRanges,
+    deleted_at?: TimeRanges | null,
+}
+
+type SearchParams = {
+    artistName: string,
+    albumName: string,
+}
 
 
-const PlayListIndex = () => {
+const PlayListIndex: React.FC = () => {
     const [albums, setAlbums] = useState<AlbumType[]>([]);
     const [artists, setArtists] = useState<ArtistType[]>([]);
     
-    const fetchPlaylistData = async ({searchParams = {}}) => {
+    const fetchPlaylistData = async (searchParams : SearchParams | null) => {
         const fetchSuccess = (res: { data: { albums: AlbumType[], artists: ArtistType[]}}) => {
             setAlbums(res.data.albums);
-            setArtists(res.data.albums);
+            setArtists(res.data.artists);
+            console.log(res.data);
         }
 
         const fetchError = (e: any) => {
@@ -55,15 +61,18 @@ const PlayListIndex = () => {
         }
         const res = await axios.get(
             '/api/playlist/index', 
-            { headers: {'content-type': 'multipart/form-data'} }
+            { params: { searchParams: searchParams ?? searchParams }},
         ).then((res) => fetchSuccess(res))
          .catch((e) => fetchError(e));
     }
+    const handleSearch = async (searchParams: SearchParams) => {
+        console.log("検索")
+        fetchPlaylistData(searchParams);
+    }
 
     useEffect(() => {
-        fetchPlaylistData();   
-    })
-
+        fetchPlaylistData(null); 
+    },[]) 
     return (
         <div className="space-y-5">
             <div className="flex flex-row justify-between">
@@ -75,42 +84,46 @@ const PlayListIndex = () => {
             <div className="space-y-5">
                 <div>
                     <SortForm 
-                        albums={{albums}}
-                        artists={{artists}}
-                        handleSearch={{handleSearch}}
+                        // albums={{albums}}
+                        // artists={{artists}}
+                        handleSearch={handleSearch}
                     />
                 </div>
                 <div>
                     <label className="text-2xl font-semibold">プレイリスト</label>
                     <div className="space-y-4">
-                    {
-                        albums.map((album: AlbumType) => {
-                            return (
-                        <div>
-                                    <div className="text-xl font-medium">アルバム名：{album.name}</div>
-                                    <ul className="space-y-2">
-                                    {
-                                        album.album_music_tracks?.length === 0 ? null :
-                                        album.album_music_tracks!.map((track) => {
-                                            return (
-                                                <li className="flex jusitify-between w-full border-b border-gray-400">
-                                                    <div className="flex flex-row w-full">
-                                                        <div className="p-4 text-lg">{track.track_index}</div>
-                                                        <div className="">
-                                                            <div className="font-medium text-lg">{track.music.name}</div>
-                                                            <div className="text-sm">{returnArtistName(artists, track.music.artist_id)}</div>
-                                                        </div>
-                        </div>
-                                                    <div className="w-auto">{secToTime(track.music.play_time_sec)}</div>
-                    </li>
-                                            )
-                                        })
-                                    }
-                </ul>
-                                </div>
-                            )
-                        })
-                    }
+                    <table className="table">
+                        <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                            <tr >
+                                <td className="px-6 py-3 w-10">演奏順</td>
+                                <td className="px-6 py-3">アルバム名</td>
+                                <td className="px-6 py-3">アーティスト名</td>
+                                <td className="px-6 py-3">ミュージック名</td>
+                                <td className="px-6 py-3">演奏時間</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {
+                            albums.length > 0 ? albums.map((album: AlbumType) => {
+                                return (
+                                    !album.album_music_tracks || album.album_music_tracks?.length === 0 ? null :
+                                    album.album_music_tracks!.map((track) => {
+                                        if(track.music === null) return;
+                                        return (
+                                            <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                                <td className="px-6 py-3">{album.id}-{track.track_index}</td>
+                                                <td className="px-6 py-3">{album.name}</td>
+                                                <td className="px-6 py-3">{returnArtistName(artists, track.music.artist_id)}</td>
+                                                <td className="px-6 py-3">{track.music.name}</td>
+                                                <td className="px-6 py-3">{secToTime(track.music.play_time_sec)}</td>
+                                            </tr>
+                                        )
+                                    })
+                                )
+                            }) : null
+                        }
+                        </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -130,14 +143,29 @@ const secToTime = (sec: number) => {
     const seconds = sec % 60;
     return minute + ":" + seconds.toString().padStart(2, '0');
 }
-const SortForm: React.ElementType = ({albums, artists}) => {
+const SortForm: React.ElementType = ({handleSearch}) => {
     const [artistName, setArtistName] = useState<string>("");
-    const [musicName, setMusicName] = useState<string>("");
+    const [albumName, setAlbumName] = useState<string>("");
+
+    const submitSearch = () => {
+        const searchParams = {
+            artistName,
+            albumName
+        }
+        handleSearch(searchParams)
+    }
 
     return (
         <div className="border border-gray-300 p-4">
             <h3 className="text-2xl font-semibold">検索</h3>
             <div className="space-y-3">
+                <div className="space-x-4">
+                    <label>アルバム名</label>
+                    <input
+                        onChange={(result) => setAlbumName(result.target.value)} 
+                        className="input-text"
+                    />
+                </div>
                 <div className="space-x-4">
                     <label>アーティスト名</label>
                     <input
@@ -145,16 +173,9 @@ const SortForm: React.ElementType = ({albums, artists}) => {
                         className="input-text"
                     />
                 </div>
-                <div className="space-x-4">
-                    <label>ミュージック名</label>
-                    <input
-                        onChange={(result) => setMusicName(result.target.value)} 
-                        className="input-text"
-                    />
-                </div>
             </div>
             <div className="flex justify-center ">
-                <button className="btn primary-color">検索する</button>
+                <button onClick={submitSearch} className="btn primary-color">検索する</button>
             </div>
         </div>
     );

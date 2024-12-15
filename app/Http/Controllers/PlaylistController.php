@@ -78,9 +78,31 @@ class PlaylistController extends Controller
 
     public function index (Request $request) 
     {
-        $albums = Album::with('album_music_tracks.music')->get();
-        $artists = Artist::get();
-        Log::info($albums);
+        $search_params = $request["searchParams"]; 
+        $album_query = Album::query();
+        $artist_query = Artist::query();
+
+        // アルバム検索
+        if (!empty($search_params) && isset($search_params['albumName'])) {
+            $search_album = $search_params['albumName'];
+            $album_query->where('name', 'like', "%{$search_album}%"); // アルバム検索   
+        }
+
+        // アーティスト検索、取得
+        if (!empty($search_params) && isset($search_params['artistName'])) {
+            $search_artist = $search_params['artistName'];
+            $artist_query->where('name', 'like', "%{$search_artist}%");
+        }
+        $artists = $artist_query->get();
+        $artistIds = $artists->pluck('id');
+        $album_query->with([
+            'album_music_tracks.music' => function ($query) use ($search_params, $artistIds) {
+            // アーティストidsをもとに検索
+            $query->whereIn('artist_id', $artistIds);
+        }]);
+
+        $albums = $album_query->get();
+        
 
         return response()->json([
             'albums' => $albums,

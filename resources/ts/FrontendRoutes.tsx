@@ -6,12 +6,12 @@ import { BrowserRouter, Route, Routes, Link, RouteProps } from "react-router-dom
   
   const routes = [
     {
-      path: '/create',
-      Component: PlayListCreate
-    },
-    {
       path: '/',
       Component: PlayListIndex
+    },
+    {
+      path: '/create',
+      Component: PlayListCreate
     },
     {
       path: '*',
@@ -20,13 +20,11 @@ import { BrowserRouter, Route, Routes, Link, RouteProps } from "react-router-dom
   ] as const satisfies RouteProps[];
   
   const FrontendRoutes = () => {
-    console.log(routes);
     return (
       <BrowserRouter>
-        <div>Route</div>
         <Routes>
           <Route path="/" element={<Layout />}>
-            {routes.map(({ path, Component }, i) => <Route path={path} element={<Component />} />)}
+            {routes.map(({ path, Component }, i) => <Route key={i} path={path} element={<Component />} />)}
           </Route>
         </Routes>
       </BrowserRouter>

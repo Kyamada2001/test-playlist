@@ -27,7 +27,6 @@ return new class extends Migration
 
         Schema::create('music', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('album_id')->constrained();
             $table->foreignId('artist_id')->constrained();
             $table->string('name');
             $table->time('play_time');
@@ -35,7 +34,7 @@ return new class extends Migration
             $table->softDeletes()->nullable();
         });
 
-        Schema::create('album_tracks', function (Blueprint $table) {
+        Schema::create('album_music_tracks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('album_id')->constrained();
             $table->foreignId('music_id')->constrained();
@@ -50,7 +49,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('album_tracks');
+        Schema::dropIfExists('album_music_tracks');
         Schema::dropIfExists('music');
         Schema::dropIfExists('artists');
         Schema::dropIfExists('albums');

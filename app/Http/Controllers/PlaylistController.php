@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Album;
 use App\Models\Artist;
 use App\Models\Music;
-use App\Models\AlbumTrack;
+use App\Models\AlbumMusicTrack;
 
 class PlaylistController extends Controller
 {
@@ -44,7 +44,7 @@ class PlaylistController extends Controller
                 Log::info($albumData);
                 $album = new Album();
                 $music = new Music();
-                $album_track = new AlbumTrack();
+                $album_music_track = new AlbumMusicTrack();
 
                 $album->name = $albumData["albumName"];
                 $album->save();
@@ -56,15 +56,14 @@ class PlaylistController extends Controller
                     Log::info($artist);
 
                     $music->name = $musicData["musicName"];
-                    $music->album_id = $album->id;
                     $music->artist_id = $artist->id;
                     $music->play_time_sec = $this->timeToNum($musicData["musicTime"]);
                     $music->save();
 
-                    $album_track->album_id = $album->id;
-                    $album_track->music_id = $music->id;
-                    $album_track->track_index = $musicData["trackIndex"];
-                    $album_track->save();
+                    $album_music_track->album_id = $album->id;
+                    $album_music_track->music_id = $music->id;
+                    $album_music_track->track_index = $musicData["trackIndex"];
+                    $album_music_track->save();
 
                 }
             }

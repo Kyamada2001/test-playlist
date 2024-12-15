@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Music;
 use App\Models\Album;
 
-class AlbumTrack extends Model
+class AlbumMusicTrack extends Model
 {
     protected $fillable = [
         "album_id",

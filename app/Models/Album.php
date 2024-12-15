@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Music;
-use App\Models\AlbumTrack;
+use App\Models\AlbumMusicTrack;
 
 class Album extends Model
 {
@@ -12,13 +12,8 @@ class Album extends Model
         "name"
     ];
 
-    public function music()
+    public function album_music_tracks()
     {
-        return $this->belongsTo(Music::class);
-    }
-
-    public function album_tracks()
-    {
-        return $this->belongsTo(ArbumTrack::class);
+        return $this->belongsTo(ArbumMusicTrack::class);
     }
 }

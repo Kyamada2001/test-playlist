@@ -17,7 +17,8 @@ class PlaylistController extends Controller
             'playlist' => 'required|array',
             'playlist.*.albumName' => 'required|string',
             'playlist.*.music' => 'required|array',
-            'playlist.*.music.*.musicName' => 'required_|string',
+'playlist.*.music.*.trackIndex' => 'required|integer',
+            'playlist.*.music.*.musicName' => 'required|string',
             'playlist.*.music.*.artistName' => 'required|string',
             'playlist.*.music.*.musicTime' => 'required|regex:/^([0-9]{1,3}):([0-5][0-9])$/',
         ]);

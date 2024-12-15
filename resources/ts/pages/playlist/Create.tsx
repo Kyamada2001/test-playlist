@@ -15,6 +15,7 @@ const PlayListCreate = () => {
     }
 
     type MusicType = {
+        trackIndex: number,
         musicName: string,
         artistName: string,
         musicTime: string,
@@ -60,6 +61,7 @@ const PlayListCreate = () => {
             // ミュージック情報を取得
             const splitMusicInfo: string[] = splitAlbum.split("\t");
             const tmpMusicInfo: MusicType = {
+                trackIndex: index + 1,
                 musicName: splitMusicInfo[0] as string,
                 artistName: splitMusicInfo[1] as string,
                 musicTime: splitMusicInfo[2] as string
@@ -122,13 +124,14 @@ const PlayListCreate = () => {
                         if (splitError[index-1] == "playlist") acc += `${playlist![parseInt(curr)].albumName}`;
                         if (splitError[index-1] == "music") acc += `${curr}行目の`;
                     } else {
+                        if (curr == "trackIndex") acc += `演奏順番が`;
                         if (curr == "musicName") acc += `音楽名が`;
                         if (curr == "artistName") acc += `アーティスト名が`;
                         if (curr == "musicTime") acc += `演奏時間が`;
                     }
                     if (lastIndex === index) acc += "エラーです。";
                     return acc
-                },"")
+                }, "")
                 return errorMessage;
             })
             return errorMessages;
@@ -144,10 +147,11 @@ const PlayListCreate = () => {
                 }
             }
         ).then((res) => {
-            return res.data
+            setErrorMessages([]);
+            return res.data;
         }).catch((e: any) => {
-            const errorMessages = validateMessage(e.response.data)
-            setErrorMessages(errorMessages)
+            const errorMessages = validateMessage(e.response.data);
+            setErrorMessages(errorMessages);
         });
     }
 

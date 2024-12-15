@@ -2,32 +2,78 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
+use App\Models\Album;
+use App\Models\Artist;
+use App\Models\Music;
+use App\Models\AlbumTrack;
 
 class PlaylistController extends Controller
 {
+
+    protected function timeToNum ($strTime) 
+    {
+        // H:i→ssに変換
+        $splitTime = explode(':', $strTime, 2);
+        $minutes = intval($splitTime[0]);
+        $second = intval($splitTime[1]);
+
+        $numTime = $minutes * 60 + $second;
+        return $numTime;
+    }
+    
     public function store (Request $request) 
     {
-        Log::info($request);
         $data = $request->data;
 
         $validated = $request->validate([
             'playlist' => 'required|array',
             'playlist.*.albumName' => 'required|string',
             'playlist.*.music' => 'required|array',
-'playlist.*.music.*.trackIndex' => 'required|integer',
+            'playlist.*.music.*.trackIndex' => 'required|integer',
             'playlist.*.music.*.musicName' => 'required|string',
             'playlist.*.music.*.artistName' => 'required|string',
             'playlist.*.music.*.musicTime' => 'required|regex:/^([0-9]{1,3}):([0-5][0-9])$/',
         ]);
-        Log::info($validated);
+        DB::beginTransaction();  
+        try { 
+            foreach($validated["playlist"] as $albumData) {
+                Log::info($albumData);
+                $album = new Album();
+                $music = new Music();
+                $album_track = new AlbumTrack();
 
-        
-        // $this->logger->info('debug', ['foo', $request->playlist]);
+                $album->name = $albumData["albumName"];
+                $album->save();
 
+                foreach($albumData["music"] as $musicData) {
+                    $artistName = $musicData["artistName"];
+                    Log::info($artistName);
+                    $artist = Artist::firstOrCreate(['name' => $artistName]);
+                    Log::info($artist);
+
+                    $music->name = $musicData["musicName"];
+                    $music->album_id = $album->id;
+                    $music->artist_id = $artist->id;
+                    $music->play_time_sec = $this->timeToNum($musicData["musicTime"]);
+                    $music->save();
+
+                    $album_track->album_id = $album->id;
+                    $album_track->music_id = $music->id;
+                    $album_track->track_index = $musicData["trackIndex"];
+                    $album_track->save();
+
+                }
+            }
+        } catch (Exception $e) {
+            DB::rollback();
+            Log::info('error', ['playlist_store_error', $validated]);
+            return response()->json(500);
+        }
+        DB::commit();
         return response()->json(200);
     }
-
 }

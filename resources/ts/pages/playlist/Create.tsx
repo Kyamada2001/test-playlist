@@ -11,7 +11,7 @@ const PlayListCreate = () => {
 
     type AlbumType = {
         albumName: string,
-        musics: MusicType[]
+        music: MusicType[]
     }
 
     type MusicType = {
@@ -23,6 +23,7 @@ const PlayListCreate = () => {
     // 変数定義
     const directoryRef = useRef<HTMLInputElement | null>(null);
     const [playlist, setPlaylist] = useState<playlistType | null>(null)
+    const [errorMessages, setErrorMessages] = useState<string[]>([])
 
     // 関数定義
     useEffect(() => {
@@ -89,7 +90,7 @@ const PlayListCreate = () => {
 
                 tmpPlaylist[i] = {
                     albumName: tmpAlbumName,
-                    musics: tmpMusics,
+                    music: tmpMusics,
                 }
             }
             setPlaylist(tmpPlaylist)
@@ -99,11 +100,40 @@ const PlayListCreate = () => {
     }
 
     const submit = async (data: playlistType) => {
+        // TODO: エラーメッセージを、統合的に管理できるように集約する必要あり
+        // Laravelからのエラーをメッセージ化
+        const validateMessage = (e: { errors: Object, message: string }) => {
+            function isNumeric(value: string) {
+                return /^[0-9]+$/.test(value);
+            }
+            
+            const errorKeys: string[] = Object.keys(e.errors);
+            const errorMessages = errorKeys.map((errorKey) => {
+                // if (!errorKey) return ""
+                const splitError = errorKey.split(".");
+                const lastIndex = splitError.length - 1;
+
+                const errorMessage = splitError.reduce((acc, curr, index, array) => {
+                    if (isNumeric(curr)) {
+                        if (splitError[index-1] == "playlist") acc += `${playlist![parseInt(curr)].albumName}`;
+                        if (splitError[index-1] == "music") acc += `${curr}行目の`;
+                    } else {
+                        if (curr == "musicName") acc += `音楽名が`;
+                        if (curr == "artistName") acc += `アーティスト名が`;
+                        if (curr == "musicTime") acc += `演奏時間が`;
+                    }
+                    if (lastIndex === index) acc += "エラーです。";
+                    return acc
+                },"")
+                return errorMessage;
+            })
+            return errorMessages;
+        }
+
         if (!data) return;
-        
         const res = await axios.post(
             '/api/playlist/store', 
-            data,
+            { playlist: data },
             {
                 headers: {
                     'content-type': 'multipart/form-data',
@@ -112,8 +142,9 @@ const PlayListCreate = () => {
         ).then((res) => {
             return res.data
         }).catch((e: any) => {
+            const errorMessages = validateMessage(e.response.data)
+            setErrorMessages(errorMessages)
         });
-        console.log(res)
     }
 
     // 実行処理
@@ -140,6 +171,14 @@ const PlayListCreate = () => {
             <div>
                 <label>読み取り結果</label>
                 {
+                    errorMessages.length === 0 ? null
+                        : errorMessages.map((errorMessage) => {
+                            return (
+                                <div className="text-red-500">{errorMessage}</div>
+                            )
+                        })
+                }
+                {
                     !playlist ? null 
                         : playlist.map((album: AlbumType) => {
                             return (
@@ -147,7 +186,7 @@ const PlayListCreate = () => {
                                     <label>アルバム名：{album.albumName}</label>
                                     <ul>
                                         {
-                                            album.musics.map((music: MusicType) => {
+                                            album.music.map((music: MusicType) => {
                                                 return (
                                                     <div className="ml-5 mb-5">
                                                         <li>曲名：{music.musicName}</li>

@@ -46,7 +46,7 @@ type MusicType =  {
 type SearchParamsType = {
     artistName: string,
     albumName: string,
-firstChar: string | null,
+    firstChar: string | null,
 }
 
 type SortStatusType = "up" | "down"
@@ -79,14 +79,14 @@ const PlayListIndex: React.FC = () => {
         const sortMusic = [...music]; 
         const order = status === "up" ? -1 : 1;
         sortMusic.sort((a,b) => {
-// アルバムを元にソート
+            // アルバムを元にソート
             const albumIdA = a.album_music_tracks!.album_id;
             const albumIdB = b.album_music_tracks!.album_id;
             const albumIndexA = sortAlbum.findIndex((album) => album.id === albumIdA);
             const albumIndexB = sortAlbum.findIndex((album) => album.id === albumIdB);
             // 違うアルバムの場合、albumのindexをソート
             if (albumIdB !== albumIdA) {
-// アルバムは、すでにソートされてるためorderは乗算しない
+                // アルバムは、すでにソートされてるためorderは乗算しない
                 return albumIndexA - albumIndexB;
             } else {
                 // 同じアルバムの場合、track_indexをソート
@@ -131,7 +131,7 @@ const PlayListIndex: React.FC = () => {
         if (status === "down") sortMusic.sort((a,b) =>  a.play_time_sec - b.play_time_sec); // 降順
         setMusic(sortMusic);
     }
-const handleIndexOrAlbum = (status: "up" | "down", isNameSort: IsNameSortType = false) => {
+    const handleIndexOrAlbum = (status: "up" | "down", isNameSort: IsNameSortType = false) => {
         const sortedAlbum = sortAlbum(status, isNameSort);
         const sortedMusic = sortMusic(status, sortedAlbum);
         setMusic(sortedMusic);
@@ -159,15 +159,15 @@ const handleIndexOrAlbum = (status: "up" | "down", isNameSort: IsNameSortType = 
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <tr>
                                 <td className="px-3 py-3 w-26">
-                                                                        <Sort  title={"演奏順"} keyPrefix={"track"} handleSort={handleIndexOrAlbum}/>
+                                    <Sort  title={"演奏順"} keyPrefix={"track"} handleSort={handleIndexOrAlbum}/>
                                 </td>
                                 <td className="px-3 py-3 w-48">
                                     <Sort title={"アルバム名"} keyPrefix={"album"} handleSort={(props: "up" | "down") => handleIndexOrAlbum(props, true)}/>
                                 </td>
-                                                                <td className="px-3 py-3">アーティスト名</td>
+                                <td className="px-3 py-3">アーティスト名</td>
                                 <td className="px-3 py-3">ミュージック名</td>
                                 <td className="px-3 py-3 w-26 space-x-1">
-                                                                        <Sort  title={"演奏時間"} keyPrefix={"time"} handleSort={handleSortTime}/>
+                                    <Sort  title={"演奏時間"} keyPrefix={"time"} handleSort={handleSortTime}/>
                                 </td>
                             </tr>
                         </thead>
@@ -199,21 +199,21 @@ const Sort: React.ElementType = ({title, handleSort, keyPrefix}) => {
         handleSort(status);
     };
 
-    return (                               
-<div className="flex items-center space-x-2">
+    return (    
+        <div className="flex items-center space-x-2">
             <span>{title}</span>
-        <span className="flex flex-col">
-            <button key={`${keyPrefix}-up`} onClick={() => sortSortStatus("up")}><FaChevronUp/></button>
-            <button key={`${keyPrefix}-down`} onClick={() => sortSortStatus("down")}><FaChevronDown/></button>
-        </span>
-</div> 
+            <span className="flex flex-col">
+                <button key={`${keyPrefix}-up`} onClick={() => sortSortStatus("up")}><FaChevronUp/></button>
+                <button key={`${keyPrefix}-down`} onClick={() => sortSortStatus("down")}><FaChevronDown/></button>
+            </span>
+        </div> 
     )
 }
 
 const SearchForm: React.ElementType = ({handleSearch}) => {
     const [artistName, setArtistName] = useState<string>("");
     const [albumName, setAlbumName] = useState<string>("");
-const [firstChar, setFirstChar] = useState<string | null>(null);
+    const [firstChar, setFirstChar] = useState<string | null>(null);
     const characters = [...hiragana, ...alphabet];
 
     const handleClickChar = (char: string) => {
@@ -241,6 +241,7 @@ const [firstChar, setFirstChar] = useState<string | null>(null);
                 <div className="space-x-4">
                     <label>アルバム名</label>
                     <input
+                        value={albumName}
                         onChange={(result) => setAlbumName(result.target.value)} 
                         className="input-text"
                     />
@@ -248,11 +249,12 @@ const [firstChar, setFirstChar] = useState<string | null>(null);
                 <div className="space-x-4">
                     <label>アーティスト名</label>
                     <input
+                        value={artistName}
                         onChange={(result) => setArtistName(result.target.value)}
                         className="input-text"
                     />
                 </div>
-<div>
+                <div>
                     <label>ミュージック名の頭文字</label>
                     <ul className="p-2 text-black flex flex-wrap space-x-3 cursor-pointer">
                         {
@@ -265,7 +267,8 @@ const [firstChar, setFirstChar] = useState<string | null>(null);
                     </ul>
                 </div>
             </div>
-            <div className="flex justify-center ">
+            <div className="flex justify-center space-x-3">
+                <button onClick={clearSearch} className="btn primary-color">クリアする</button>
                 <button onClick={submitSearch} className="btn primary-color">検索する</button>
             </div>
         </div>

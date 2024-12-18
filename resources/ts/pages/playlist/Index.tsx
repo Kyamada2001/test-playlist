@@ -42,10 +42,13 @@ type MusicType =  {
     album_music_tracks?: AlbumMusicTrack
 }
 
-type SearchParams = {
+type SearchParamsType = {
     artistName: string,
     albumName: string,
 }
+
+type SortStatusType = "up" | "down"
+type IsNameSortType = boolean
 
 
 const PlayListIndex: React.FC = () => {
@@ -53,7 +56,7 @@ const PlayListIndex: React.FC = () => {
     const [artists, setArtists] = useState<ArtistType[]>([]);
     const [music, setMusic] = useState<MusicType[]>([]);
     
-    const fetchPlaylistData = async (searchParams : SearchParams | null) => {
+    const fetchPlaylistData = async (searchParams : SearchParamsType | null) => {
         const fetchSuccess = (res: { data: { albums: AlbumType[], artists: ArtistType[],music: MusicType[]}}) => {
             setAlbums(res.data.albums);
             setArtists(res.data.artists);
@@ -70,30 +73,66 @@ const PlayListIndex: React.FC = () => {
         ).then((res) => fetchSuccess(res))
          .catch((e) => fetchError(e));
     }
-    const handleSearch = (searchParams: SearchParams) => {
-        fetchPlaylistData(searchParams);
-    }
-    const handleSortTime = (status: "up" | "down") => {
-        
-        const sortMusic = [...music]; 
-        if (status === "up") sortMusic.sort((a,b) => b.play_time_sec - a.play_time_sec) // 昇順
-        if (status === "down") sortMusic.sort((a,b) =>  a.play_time_sec - b.play_time_sec) // 降順
-        setMusic(sortMusic);
-    }
-    const handleSortTrack = (status: "up" | "down") => {
-        console.log(status)
+    const sortMusic = (status: SortStatusType, sortAlbum: AlbumType[]) => {
         const sortMusic = [...music]; 
         const order = status === "up" ? -1 : 1;
         sortMusic.sort((a,b) => {
-            if (b.album_id !== a.album_id) {
-                // Comment：申し訳ありません。downの時の挙動がおかしくなります。
-                return (b.album_id - a.album_id) * order;
+// アルバムを元にソート
+            const albumIdA = a.album_music_tracks!.album_id;
+            const albumIdB = b.album_music_tracks!.album_id;
+            const albumIndexA = sortAlbum.findIndex((album) => album.id === albumIdA);
+            const albumIndexB = sortAlbum.findIndex((album) => album.id === albumIdB);
+            // 違うアルバムの場合、albumのindexをソート
+            if (albumIdB !== albumIdA) {
+// アルバムは、すでにソートされてるためorderは乗算しない
+                return albumIndexA - albumIndexB;
             } else {
-                // 同じ album_id の場合、track_index を昇順でソート
+                // 同じアルバムの場合、track_indexをソート
                 return (a.album_music_tracks!.track_index - b.album_music_tracks!.track_index) * order;
             }
-        })
+        });
+        return sortMusic;
+    }
+    const sortAlbum = (status: SortStatusType, isNameSort: IsNameSortType) => {
+        let sortAlbums = [...albums];
+        const order = status === "up" ? -1 : 1;
+
+        if(isNameSort) {
+            sortAlbums.sort((a,b) => {
+                // 日本語と英語を判別
+                const isEnglishA = /^[a-zA-Z0-9]/.test(a.name);
+                const isEnglishB = /^[a-zA-Z0-9]/.test(b.name);
+                const isSymbolA = /^[!"#$%&'()\*\+\-\.,\/:;<=>?@\[\\\]^_`{|}~]/.test(a.name);
+                const isSymbolB = /^[!"#$%&'()\*\+\-\.,\/:;<=>?@\[\\\]^_`{|}~]/.test(b.name);
+
+                // 記号が比較対象の場合
+                if (isSymbolA || isSymbolB) return a.name.localeCompare(b.name) * -1 * order;
+                // 両方日本語または両方英語の場合
+                if (isEnglishA === isEnglishB) return a.name.localeCompare(b.name) * order;
+                // aが日本語、bが英語の場合
+                if (!isEnglishA && isEnglishB) return order;
+                // aが英語、bが日本語の場合
+                return order * -1;
+            })
+        } else {
+            // アルバムをidでソート
+            sortAlbums.sort((a,b) => (a.id! - b.id!) * order);
+        }
+        return sortAlbums;
+    }
+    const handleSearch = (searchParams: SearchParamsType) => {
+        fetchPlaylistData(searchParams);
+    }
+    const handleSortTime = (status: SortStatusType) => {      
+        const sortMusic = [...music]; 
+        if (status === "up") sortMusic.sort((a,b) => b.play_time_sec - a.play_time_sec); // 昇順
+        if (status === "down") sortMusic.sort((a,b) =>  a.play_time_sec - b.play_time_sec); // 降順
         setMusic(sortMusic);
+    }
+const handleIndexOrAlbum = (status: "up" | "down", isNameSort: IsNameSortType = false) => {
+        const sortedAlbum = sortAlbum(status, isNameSort);
+        const sortedMusic = sortMusic(status, sortedAlbum);
+        setMusic(sortedMusic);
     }
 
     useEffect(() => {
@@ -116,17 +155,17 @@ const PlayListIndex: React.FC = () => {
                     <div className="space-y-4">
                     <table className="table w-full overflow-x-scroll">
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                            <tr >
-                                <td className="px-3 py-3 w-10">
-                                    <span>演奏順</span>
-                                    <Sort keyPrefix={"track"} handleSort={handleSortTrack}/>
+                            <tr>
+                                <td className="px-3 py-3 w-26">
+                                                                        <Sort  title={"演奏順"} keyPrefix={"track"} handleSort={handleIndexOrAlbum}/>
                                 </td>
-                                <td className="px-3 py-3">アルバム名</td>
-                                <td className="px-3 py-3">アーティスト名</td>
+                                <td className="px-3 py-3 w-48">
+                                    <Sort title={"アルバム名"} keyPrefix={"album"} handleSort={(props: "up" | "down") => handleIndexOrAlbum(props, true)}/>
+                                </td>
+                                                                <td className="px-3 py-3">アーティスト名</td>
                                 <td className="px-3 py-3">ミュージック名</td>
-                                <td className="px-3 py-3 w-26 flex items-center space-x-1">
-                                    <span>演奏時間</span>
-                                    <Sort keyPrefix={"time"} handleSort={handleSortTime}/>
+                                <td className="px-3 py-3 w-26 space-x-1">
+                                                                        <Sort  title={"演奏時間"} keyPrefix={"time"} handleSort={handleSortTime}/>
                                 </td>
                             </tr>
                         </thead>
@@ -134,7 +173,7 @@ const PlayListIndex: React.FC = () => {
                         {
                             music.length > 0 ? music.map((musicVal: MusicType) => {
                                 return (
-                                    <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                    <tr className="dark:text-white bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                                         <td className="px-3 py-3">{musicVal.album_music_tracks!.album_id}-{musicVal.album_music_tracks!.track_index}</td>
                                         <td className="px-3 py-3">{returnAlbumName(albums, musicVal.album_music_tracks?.album_id!)}</td>
                                         <td className="px-3 py-3">{returnArtistName(artists, musicVal.artist_id)}</td>
@@ -153,16 +192,19 @@ const PlayListIndex: React.FC = () => {
     )
 }
 
-const Sort: React.ElementType = ({handleSort, keyPrefix}) => {
+const Sort: React.ElementType = ({title, handleSort, keyPrefix}) => {
     const sortSortStatus = (status: "up" | "down") => {
         handleSort(status);
     };
 
     return (                               
-        <span>
+<div className="flex items-center space-x-2">
+            <span>{title}</span>
+        <span className="flex flex-col">
             <button key={`${keyPrefix}-up`} onClick={() => sortSortStatus("up")}><FaChevronUp/></button>
             <button key={`${keyPrefix}-down`} onClick={() => sortSortStatus("down")}><FaChevronDown/></button>
         </span>
+</div> 
     )
 }
 

@@ -94,7 +94,8 @@ class PlaylistController extends Controller
 
         // 頭文字検索
         if (!empty($search_params) && isset($search_params['firstChar'])) {
-            $music_query->whereRaw('SUBSTRING(name, 1, 1) = ?', $search_params['firstChar']);
+            Log::info($search_params['firstChar']);
+            $music_query->whereRaw('SUBSTRING(name, 1, 1) = ?', [$search_params['firstChar']]);
         }
 
         // アルバム検索
@@ -108,7 +109,7 @@ class PlaylistController extends Controller
 
         $albums = $album_query->get();
         $music = $music_query->with('album_music_tracks')->get();
-        
+
         
         return response()->json([
             'albums' => $albums,

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { FaChevronUp } from "react-icons/fa";
 import { FaChevronDown } from "react-icons/fa";
+import { hiragana, alphabet } from "../../const";
 
 type AlbumType = {
     id?: number,
@@ -45,6 +46,7 @@ type MusicType =  {
 type SearchParamsType = {
     artistName: string,
     albumName: string,
+firstChar: string | null,
 }
 
 type SortStatusType = "up" | "down"
@@ -211,11 +213,23 @@ const Sort: React.ElementType = ({title, handleSort, keyPrefix}) => {
 const SearchForm: React.ElementType = ({handleSearch}) => {
     const [artistName, setArtistName] = useState<string>("");
     const [albumName, setAlbumName] = useState<string>("");
+const [firstChar, setFirstChar] = useState<string | null>(null);
+    const characters = [...hiragana, ...alphabet];
 
+    const handleClickChar = (char: string) => {
+        setFirstChar(char);
+    }
+
+    const clearSearch = () => {
+        setArtistName("");
+        setAlbumName("");
+        setFirstChar("");
+    }
     const submitSearch = () => {
-        const searchParams = {
+        const searchParams: SearchParamsType = {
             artistName,
-            albumName
+            albumName,
+            firstChar,
         };
         handleSearch(searchParams);
     }
@@ -237,6 +251,18 @@ const SearchForm: React.ElementType = ({handleSearch}) => {
                         onChange={(result) => setArtistName(result.target.value)}
                         className="input-text"
                     />
+                </div>
+<div>
+                    <label>ミュージック名の頭文字</label>
+                    <ul className="p-2 text-black flex flex-wrap space-x-3 cursor-pointer">
+                        {
+                            characters.map((char) => {
+                                return (
+                                    <button className={firstChar === char ? "text-orange-600" : ""} onClick={() => handleClickChar(char)}>{char}</button>
+                                )
+                            })
+                        }
+                    </ul>
                 </div>
             </div>
             <div className="flex justify-center ">

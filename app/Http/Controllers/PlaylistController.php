@@ -92,6 +92,12 @@ class PlaylistController extends Controller
         $artistIds = $artists->pluck('id');
         $music_query->whereIn('artist_id', $artistIds);
 
+        // 頭文字検索
+        if (!empty($search_params) && isset($search_params['firstChar'])) {
+            Log::info($search_params['firstChar']);
+            $music_query->whereRaw('SUBSTRING(name, 1, 1) = ?', [$search_params['firstChar']]);
+        }
+
         // アルバム検索
         if (!empty($search_params) && isset($search_params['albumName'])) {
             $search_album = $search_params['albumName'];
@@ -103,8 +109,8 @@ class PlaylistController extends Controller
 
         $albums = $album_query->get();
         $music = $music_query->with('album_music_tracks')->get();
-        
 
+        
         return response()->json([
             'albums' => $albums,
             'artists' => $artists,
